@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E🎙️%3C/text%3E%3C/svg%3E">
+<title>語音轉文字｜瀏覽器 Whisper</title>
+<meta name="author" content="wingfeeling">
+<meta name="copyright" content="© 2026 wingfeeling">
+<meta name="description" content="免費、免上傳的語音轉文字工具。Whisper 模型直接在你的瀏覽器裡執行，支援錄音與音檔上傳，輸出繁體中文與 SRT 字幕。">
+<style>
+:root{
+  --bg:#f6f4ef; --card:#ffffff; --ink:#1d1f23; --muted:#6b6f76; --line:#e4e0d6;
+  --accent:#0f6e5a; --accent-ink:#fff; --accent-soft:#e3f1ec; --warn:#b54708; --danger:#c0392b;
+  --radius:14px; --shadow:0 1px 2px rgba(0,0,0,.04),0 6px 24px rgba(0,0,0,.05);
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#121417; --card:#1b1e22; --ink:#ebe9e4; --muted:#9aa0a8; --line:#2c3036;
+  --accent:#3fbf9b; --accent-ink:#0d1512; --accent-soft:#183029; --warn:#f0a35e; --danger:#ef6b5b;}
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink)}
+body{font:16px/1.7 "Noto Serif TC","Source Han Serif TC","PMingLiU",Georgia,serif}
+h1,h2,h3,button,select,label,.ui{font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif}
+.wrap{max-width:900px;margin:0 auto;padding:40px 20px 80px}
+header h1{font-size:clamp(26px,4vw,36px);margin:0 0 6px;letter-spacing:.02em}
+header p{margin:0;color:var(--muted)}
+.badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.badge{font:13px/1 system-ui,sans-serif;padding:6px 10px;border-radius:999px;background:var(--accent-soft);color:var(--accent)}
+.badge.warn{background:transparent;border:1px solid var(--warn);color:var(--warn)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px;margin-top:22px}
+.card h2{font-size:18px;margin:0 0 14px;display:flex;align-items:center;gap:10px}
+.step{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--accent);color:var(--accent-ink);font-size:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+label.f{display:block;font-size:14px;color:var(--muted)}
+select,input[type=text]{width:100%;margin-top:6px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font-size:15px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:16px}
+button{border:0;border-radius:10px;padding:11px 18px;font-size:15px;cursor:pointer;background:var(--accent);color:var(--accent-ink);font-weight:600}
+button.ghost{background:transparent;color:var(--ink);border:1px solid var(--line);font-weight:500}
+button.rec{background:var(--danger);color:#fff}
+button:disabled{opacity:.45;cursor:not-allowed}
+.hint{font-size:13px;color:var(--muted);font-family:system-ui,sans-serif}
+.progress{margin-top:14px;display:grid;gap:8px}
+.bar{font:12px/1.4 ui-monospace,Menlo,monospace;color:var(--muted)}
+.bar .t{height:6px;border-radius:6px;background:var(--line);overflow:hidden;margin-top:3px}
+.bar .t i{display:block;height:100%;background:var(--accent);width:0;transition:width .2s}
+.drop{border:2px dashed var(--line);border-radius:12px;padding:26px;text-align:center;cursor:pointer;transition:.2s}
+.drop.over{border-color:var(--accent);background:var(--accent-soft)}
+.drop strong{font-family:system-ui,sans-serif}
+audio{width:100%;margin-top:14px}
+.status{margin-top:12px;font-family:system-ui,sans-serif;font-size:14px}
+.status.err{color:var(--danger)}
+.live{margin-top:12px;padding:12px 14px;border-radius:10px;background:var(--bg);color:var(--muted);font-size:15px;min-height:1.7em;max-height:140px;overflow:auto;white-space:pre-wrap}
+.segs{margin-top:14px;display:grid;gap:2px}
+.seg{display:grid;grid-template-columns:120px 1fr;gap:12px;padding:8px 10px;border-radius:8px;cursor:pointer}
+.seg:hover{background:var(--accent-soft)}
+.seg time{font:13px/1.9 ui-monospace,Menlo,monospace;color:var(--accent)}
+.seg span[contenteditable]{outline:none}
+.seg span[contenteditable]:focus{background:var(--bg);border-radius:4px}
+.seg.on{background:var(--accent-soft)}
+footer{margin-top:40px;color:var(--muted);font-size:13px;font-family:system-ui,sans-serif;text-align:center}
+footer a{color:inherit}
+.hidden{display:none!important}
+@media (max-width:560px){.seg{grid-template-columns:1fr;gap:0}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>語音轉文字</h1>
+    <p>Whisper 模型直接在你的瀏覽器裡執行。錄音和檔案都不會上傳，完全免費。</p>
+    <div class="badges" id="badges"><span class="badge">🔒 檔案不離開你的電腦</span></div>
+  </header>
+
+  <section class="card">
+    <h2><span class="step">1</span>選擇模型</h2>
+    <div class="grid">
+      <label class="f">模型（越大越準、越慢）
+        <select id="model">
+          <option value="onnx-community/whisper-base">Base：快速（約 80 MB）</option>
+          <option value="onnx-community/whisper-small" selected>Small：均衡（約 250 MB）</option>
+          <option value="onnx-community/whisper-large-v3-turbo">Large v3 Turbo：最準（約 1.6 GB，建議有 GPU）</option>
+        </select>
+      </label>
+      <label class="f">語言
+        <select id="lang">
+          <option value="chinese" selected>中文（國語）</option>
+          <option value="english">英文</option>
+          <option value="japanese">日文</option>
+          <option value="korean">韓文</option>
+          <option value="auto">自動偵測</option>
+        </select>
+      </label>
+      <label class="f">中文輸出
+        <select id="script">
+          <option value="twp" selected>繁體（台灣用語）</option>
+          <option value="tw">繁體（只轉字形）</option>
+          <option value="none">不轉換</option>
+        </select>
+      </label>
+    </div>
+    <div class="row">
+      <button id="loadBtn">載入模型</button>
+      <span class="hint" id="loadHint">第一次需要下載，之後會存在瀏覽器裡，下次直接開啟。</span>
+    </div>
+    <div class="progress" id="progress"></div>
+  </section>
+
+  <section class="card">
+    <h2><span class="step">2</span>錄音或上傳</h2>
+    <div class="row" style="margin-top:0">
+      <button id="recBtn" class="rec">● 開始錄音</button>
+      <span class="hint" id="recTime"></span>
+    </div>
+    <div class="drop" id="drop" style="margin-top:14px">
+      <strong>點這裡選擇檔案</strong>，或把檔案拖進來<br>
+      <span class="hint">支援 mp3、m4a、wav、ogg、webm、mp4 影片等</span>
+      <input type="file" id="file" accept="audio/*,video/*" class="hidden">
+    </div>
+    <audio id="player" controls class="hidden"></audio>
+    <div class="row">
+      <button id="goBtn" disabled>開始轉文字</button>
+      <span class="hint" id="audioInfo"></span>
+    </div>
+    <div class="status" id="status"></div>
+    <div class="live hidden" id="live"></div>
+  </section>
+
+  <section class="card hidden" id="resultCard">
+    <h2><span class="step">3</span>結果</h2>
+    <p class="hint" style="margin:0">點時間可以跳到那一段播放；文字可以直接點進去修改，匯出時會用修改後的內容。</p>
+    <div class="row">
+      <button id="copyBtn" class="ghost">複製全文</button>
+      <button id="txtBtn" class="ghost">下載 TXT</button>
+      <button id="srtBtn" class="ghost">下載 SRT 字幕</button>
+      <button id="vttBtn" class="ghost">下載 VTT 字幕</button>
+    </div>
+    <div class="segs" id="segs"></div>
+  </section>
+
+  <footer>使用開源的 <a href="https://github.com/openai/whisper" target="_blank" rel="noopener">OpenAI Whisper</a>（MIT 授權）與 <a href="https://huggingface.co/docs/transformers.js" target="_blank" rel="noopener">Transformers.js</a>。<br>© <span id="cy">2026</span> wingfeeling. All rights reserved.</footer>
+</div>
+
+<!-- 背景執行緒：負責下載模型與辨識，避免畫面卡住 -->
+<script type="text/js-worker" id="workerSrc">
+import { pipeline, env, WhisperTextStreamer } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.7.1';
+env.allowLocalModels = false;
+
+let asr = null, loadedKey = '';
+
+self.onmessage = async (e) => {
+  const m = e.data;
+  try {
+    if (m.type === 'load') {
+      const key = m.model + '|' + m.device;
+      if (asr && loadedKey === key) { self.postMessage({ type: 'ready', device: m.device }); return; }
+      if (asr) { try { await asr.dispose(); } catch {} asr = null; }
+      asr = await pipeline('automatic-speech-recognition', m.model, {
+        device: m.device,
+        dtype: m.dtype,
+        progress_callback: (p) => self.postMessage({ type: 'progress', p }),
+      });
+      loadedKey = key;
+      self.postMessage({ type: 'ready', device: m.device });
+    }
+    if (m.type === 'run') {
+      const opts = {
+        task: 'transcribe',
+        chunk_length_s: 30,
+        stride_length_s: 5,
+        return_timestamps: true,
+      };
+      if (m.language !== 'auto') opts.language = m.language;
+      try {
+        let done = 0;
+        opts.streamer = new WhisperTextStreamer(asr.tokenizer, {
+          skip_prompt: true,
+          callback_function: (t) => self.postMessage({ type: 'partial', text: t }),
+          on_chunk_end: () => self.postMessage({ type: 'chunk', n: ++done }),
+        });
+      } catch { /* 沒有串流也能正常轉，只是看不到即時文字 */ }
+      const out = await asr(m.audio, opts);
+      self.postMessage({ type: 'result', out });
+    }
+  } catch (err) {
+    self.postMessage({ type: 'error', message: String(err && err.message || err) });
+  }
+};
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/opencc-js@1.0.5/dist/umd/full.js"></script>
+<script type="module">
+const $ = (id) => document.getElementById(id);
+{ const y = new Date().getFullYear(); $('cy').textContent = y > 2026 ? '2026–' + y : '2026'; }
+const SR = 16000;
+
+// ---------- 背景執行緒 ----------
+const workerUrl = URL.createObjectURL(new Blob([$('workerSrc').textContent], { type: 'text/javascript' }));
+const worker = new Worker(workerUrl, { type: 'module' });
+
+// ---------- 偵測 GPU ----------
+let gpu = { ok: false, f16: false };
+async function detectGPU() {
+  try {
+    if (!navigator.gpu) return;
+    const a = await navigator.gpu.requestAdapter();
+    if (!a) return;
+    gpu = { ok: true, f16: a.features.has('shader-f16') };
+  } catch {}
+}
+await detectGPU();
+const b = document.createElement('span');
+b.className = 'badge' + (gpu.ok ? '' : ' warn');
+b.textContent = gpu.ok ? '⚡ 已啟用 GPU 加速' : '未偵測到 GPU 加速，會用 CPU（較慢）';
+$('badges').appendChild(b);
+if (gpu.ok) $('model').value = 'onnx-community/whisper-large-v3-turbo';
+
+function pickConfig(model) {
+  if (gpu.ok) {
+    const isTurbo = model.includes('turbo');
+    return {
+      device: 'webgpu',
+      dtype: {
+        encoder_model: gpu.f16 ? 'fp16' : (isTurbo ? 'q4' : 'fp32'),
+        decoder_model_merged: 'q4',
+      },
+    };
+  }
+  return { device: 'wasm', dtype: { encoder_model: 'q8', decoder_model_merged: 'q8' } };
+}
+
+// ---------- 載入模型 ----------
+let ready = false, busy = false;
+const bars = new Map();
+function setStatus(t, err = false) { $('status').textContent = t; $('status').className = 'status' + (err ? ' err' : ''); }
+function fmtMB(n) { return (n / 1048576).toFixed(n > 1e8 ? 0 : 1) + ' MB'; }
+
+$('loadBtn').onclick = () => {
+  ready = false; updateGo();
+  $('progress').innerHTML = ''; bars.clear();
+  $('loadBtn').disabled = true;
+  $('loadHint').textContent = '下載中…第一次比較久，請不要關閉頁面。';
+  const cfg = pickConfig($('model').value);
+  worker.postMessage({ type: 'load', model: $('model').value, ...cfg });
+};
+$('model').onchange = () => { ready = false; updateGo(); $('loadHint').textContent = '換了模型，請重新按「載入模型」。'; };
+
+function onProgress(p) {
+  if (p.status !== 'progress' && p.status !== 'done') return;
+  if (!/\.onnx/.test(p.file || '') && !bars.has(p.file)) return; // 只顯示大檔
+  let el = bars.get(p.file);
+  if (!el) {
+    el = document.createElement('div'); el.className = 'bar';
+    el.innerHTML = '<div class="n"></div><div class="t"><i></i></div>';
+    $('progress').appendChild(el); bars.set(p.file, el);
+  }
+  const pct = p.status === 'done' ? 100 : (p.progress || 0);
+  el.querySelector('i').style.width = pct + '%';
+  const name = p.file.split('/').pop();
+  el.querySelector('.n').textContent = `${name}　${pct.toFixed(0)}%` + (p.total ? `　/ ${fmtMB(p.total)}` : '');
+}
+
+// ---------- 錄音 ----------
+let rec = null, chunks = [], recStart = 0, recTimer = null;
+$('recBtn').onclick = async () => {
+  if (rec && rec.state === 'recording') { rec.stop(); return; }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
+    chunks = [];
+    rec = new MediaRecorder(stream);
+    rec.ondataavailable = (e) => e.data.size && chunks.push(e.data);
+    rec.onstop = () => {
+      stream.getTracks().forEach((t) => t.stop());
+      clearInterval(recTimer);
+      $('recBtn').textContent = '● 重新錄音';
+      const blob = new Blob(chunks, { type: rec.mimeType || 'audio/webm' });
+      setAudio(blob, '錄音');
+    };
+    rec.start(1000);
+    recStart = Date.now();
+    $('recBtn').textContent = '■ 停止錄音';
+    recTimer = setInterval(() => { $('recTime').textContent = '錄音中 ' + clock((Date.now() - recStart) / 1000); }, 250);
+  } catch (err) {
+    setStatus('無法使用麥克風：請允許瀏覽器使用麥克風，或確認網址是 https 開頭。', true);
+  }
+};
+
+// ---------- 上傳 ----------
+const drop = $('drop');
+drop.onclick = () => $('file').click();
+$('file').onchange = (e) => e.target.files[0] && setAudio(e.target.files[0], e.target.files[0].name);
+drop.ondragover = (e) => { e.preventDefault(); drop.classList.add('over'); };
+drop.ondragleave = () => drop.classList.remove('over');
+drop.ondrop = (e) => { e.preventDefault(); drop.classList.remove('over'); const f = e.dataTransfer.files[0]; f && setAudio(f, f.name); };
+
+let audioBlob = null, audioName = 'transcript';
+function setAudio(blob, name) {
+  audioBlob = blob;
+  audioName = (name || 'transcript').replace(/\.[^.]+$/, '');
+  const p = $('player');
+  if (p.src) URL.revokeObjectURL(p.src);
+  p.src = URL.createObjectURL(blob);
+  p.classList.remove('hidden');
+  $('recTime').textContent = '';
+  $('audioInfo').textContent = `${name}（${fmtMB(blob.size)}）`;
+  p.onloadedmetadata = () => { if (isFinite(p.duration)) $('audioInfo').textContent = `${name}（${clock(p.duration)}）`; };
+  setStatus(ready ? '準備好了，按「開始轉文字」。' : '請先在上面載入模型。');
+  updateGo();
+}
+function updateGo() { $('goBtn').disabled = !(ready && audioBlob && !busy); }
+
+async function decode(blob) {
+  const buf = await blob.arrayBuffer();
+  const ctx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: SR });
+  const ab = await ctx.decodeAudioData(buf);
+  ctx.close();
+  if (ab.numberOfChannels === 1) return ab.getChannelData(0);
+  // 混成單聲道
+  const out = new Float32Array(ab.length);
+  for (let c = 0; c < ab.numberOfChannels; c++) {
+    const d = ab.getChannelData(c);
+    for (let i = 0; i < d.length; i++) out[i] += d[i] / ab.numberOfChannels;
+  }
+  return out;
+}
+
+// ---------- 轉文字 ----------
+let t0 = 0, tick = null, totalChunks = 0, liveText = '';
+$('goBtn').onclick = async () => {
+  busy = true; updateGo();
+  setStatus('讀取音檔中…');
+  let audio;
+  try { audio = await decode(audioBlob); }
+  catch { busy = false; updateGo(); setStatus('這個檔案讀不出聲音，請換成 mp3、m4a 或 wav 再試一次。', true); return; }
+  const dur = audio.length / SR;
+  totalChunks = Math.max(1, Math.ceil(dur / 25));
+  liveText = '';
+  $('live').textContent = ''; $('live').classList.remove('hidden');
+  t0 = Date.now();
+  const show = (n = 0) => setStatus(`辨識中…（音檔長 ${clock(dur)}，已花 ${clock((Date.now() - t0) / 1000)}${totalChunks > 1 ? `，約 ${Math.min(99, Math.round(n / totalChunks * 100))}%` : ''}）`);
+  let doneChunks = 0; show();
+  tick = setInterval(() => show(doneChunks), 1000);
+  worker._chunk = (n) => { doneChunks = n; show(n); };
+  worker.postMessage({ type: 'run', audio, language: $('lang').value }, [audio.buffer]);
+};
+
+// ---------- 繁體轉換 ----------
+let conv = (s) => s;
+function makeConv() {
+  const mode = $('script').value;
+  if (mode === 'none' || !window.OpenCC) return (s) => s;
+  return OpenCC.Converter({ from: 'cn', to: mode });
+}
+conv = makeConv();
+$('script').onchange = () => { conv = makeConv(); if (rawSegs.length) render(rawSegs); };
+
+// ---------- 結果 ----------
+let rawSegs = [];
+function render(list) {
+  const segs = $('segs'); segs.innerHTML = '';
+  list.forEach((s) => {
+    const row = document.createElement('div'); row.className = 'seg';
+    row.dataset.s = s.start; row.dataset.e = s.end;
+    const tm = document.createElement('time'); tm.textContent = clock(s.start) + ' → ' + clock(s.end);
+    const tx = document.createElement('span'); tx.contentEditable = 'true'; tx.textContent = conv(s.text);
+    tm.onclick = () => { const p = $('player'); p.currentTime = s.start; p.play(); };
+    row.append(tm, tx); segs.appendChild(row);
+  });
+  $('resultCard').classList.remove('hidden');
+}
+function currentSegs() {
+  return [...document.querySelectorAll('.seg')].map((r) => ({
+    start: +r.dataset.s, end: +r.dataset.e, text: r.querySelector('span').textContent.trim(),
+  })).filter((s) => s.text);
+}
+$('player').ontimeupdate = () => {
+  const t = $('player').currentTime;
+  document.querySelectorAll('.seg').forEach((r) => r.classList.toggle('on', t >= +r.dataset.s && t < +r.dataset.e));
+};
+
+worker.onmessage = (e) => {
+  const m = e.data;
+  if (m.type === 'progress') onProgress(m.p);
+  else if (m.type === 'ready') {
+    ready = true; $('loadBtn').disabled = false;
+    $('loadHint').textContent = `✅ 模型已就緒（${m.device === 'webgpu' ? 'GPU 加速' : 'CPU'}）`;
+    if (audioBlob) setStatus('準備好了，按「開始轉文字」。');
+    updateGo();
+  }
+  else if (m.type === 'partial') { liveText += m.text; $('live').textContent = conv(liveText); $('live').scrollTop = 1e9; }
+  else if (m.type === 'chunk') { worker._chunk && worker._chunk(m.n); liveText += '\n'; }
+  else if (m.type === 'result') {
+    clearInterval(tick); busy = false; updateGo();
+    $('live').classList.add('hidden');
+    const chunksOut = m.out.chunks || [{ timestamp: [0, null], text: m.out.text }];
+    let last = 0;
+    rawSegs = chunksOut.map((c) => {
+      const start = c.timestamp[0] ?? last;
+      const end = c.timestamp[1] ?? start + 3;
+      last = end;
+      return { start, end, text: (c.text || '').trim() };
+    }).filter((s) => s.text);
+    render(rawSegs);
+    setStatus(`✅ 完成，共 ${rawSegs.length} 段，花了 ${clock((Date.now() - t0) / 1000)}。`);
+  }
+  else if (m.type === 'error') {
+    clearInterval(tick); busy = false; $('loadBtn').disabled = false; updateGo();
+    $('loadHint').textContent = '';
+    setStatus('出錯了：' + m.message + '。可以試試換小一點的模型，或重新整理頁面。', true);
+  }
+};
+
+// ---------- 匯出 ----------
+function clock(sec, ms = false, sep = '.') {
+  sec = Math.max(0, sec || 0);
+  const h = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60), s = Math.floor(sec % 60);
+  const p = (n, l = 2) => String(n).padStart(l, '0');
+  const base = (h ? p(h) + ':' : '') + p(m) + ':' + p(s);
+  return ms ? p(h) + ':' + p(m) + ':' + p(s) + sep + p(Math.round(sec % 1 * 1000) % 1000, 3) : base;
+}
+function save(text, ext, type) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text], { type: type + ';charset=utf-8' }));
+  a.download = audioName + '.' + ext; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+$('copyBtn').onclick = async () => {
+  await navigator.clipboard.writeText(currentSegs().map((s) => s.text).join('\n'));
+  $('copyBtn').textContent = '已複製 ✓'; setTimeout(() => ($('copyBtn').textContent = '複製全文'), 1500);
+};
+$('txtBtn').onclick = () => save(currentSegs().map((s) => s.text).join('\n'), 'txt', 'text/plain');
+$('srtBtn').onclick = () => save(currentSegs().map((s, i) =>
+  `${i + 1}\n${clock(s.start, true, ',')} --> ${clock(s.end, true, ',')}\n${s.text}\n`).join('\n'), 'srt', 'application/x-subrip');
+$('vttBtn').onclick = () => save('WEBVTT\n\n' + currentSegs().map((s) =>
+  `${clock(s.start, true)} --> ${clock(s.end, true)}\n${s.text}\n`).join('\n'), 'vtt', 'text/vtt');
+</script>
+</body>
+</html>
