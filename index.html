@@ -4,81 +4,131 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E🎙️%3C/text%3E%3C/svg%3E">
-<title>語音轉文字｜瀏覽器 Whisper</title>
+<title>語音轉文字｜檔案不離開你的電腦</title>
 <meta name="author" content="wingfeeling">
 <meta name="copyright" content="© 2026 wingfeeling">
-<meta name="description" content="免費、免上傳的語音轉文字工具。Whisper 模型直接在你的瀏覽器裡執行，支援錄音與音檔上傳，輸出繁體中文與 SRT 字幕。">
+<meta name="description" content="免上傳的語音轉文字工具。辨識直接在你的電腦裡執行，錄音與檔案不會離開你的電腦。支援自訂詞庫、長檔案、繁體中文與 SRT 字幕。">
 <style>
 :root{
   --bg:#f6f4ef; --card:#ffffff; --ink:#1d1f23; --muted:#6b6f76; --line:#e4e0d6;
-  --accent:#0f6e5a; --accent-ink:#fff; --accent-soft:#e3f1ec; --warn:#b54708; --danger:#c0392b;
+  --accent:#0f6e5a; --accent-ink:#fff; --accent-soft:#e3f1ec; --warn:#b54708; --warn-soft:#fdf1e6; --danger:#c0392b; --gold:#a86b00; --gold-soft:#fbf1dc;
   --radius:14px; --shadow:0 1px 2px rgba(0,0,0,.04),0 6px 24px rgba(0,0,0,.05);
 }
 @media (prefers-color-scheme:dark){
   :root{--bg:#121417; --card:#1b1e22; --ink:#ebe9e4; --muted:#9aa0a8; --line:#2c3036;
-  --accent:#3fbf9b; --accent-ink:#0d1512; --accent-soft:#183029; --warn:#f0a35e; --danger:#ef6b5b;}
+  --accent:#3fbf9b; --accent-ink:#0d1512; --accent-soft:#183029; --warn:#f0a35e; --warn-soft:#2e2418; --danger:#ef6b5b; --gold:#f2c063; --gold-soft:#2d2716;}
 }
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--ink)}
 body{font:16px/1.7 "Noto Serif TC","Source Han Serif TC","PMingLiU",Georgia,serif}
-h1,h2,h3,button,select,label,.ui{font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif}
-.wrap{max-width:900px;margin:0 auto;padding:40px 20px 80px}
+h1,h2,h3,button,select,label,input,textarea,.ui{font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif}
+.wrap{max-width:920px;margin:0 auto;padding:22px 20px 80px}
+.topbar{display:flex;justify-content:flex-end;align-items:center;gap:10px;flex-wrap:wrap;font:14px/1.4 system-ui,sans-serif;min-height:40px}
+.topbar .who{color:var(--muted)}
+header{margin-top:10px}
 header h1{font-size:clamp(26px,4vw,36px);margin:0 0 6px;letter-spacing:.02em}
 header p{margin:0;color:var(--muted)}
+.privacy{margin-top:16px;padding:14px 16px;border-radius:12px;background:var(--accent-soft);color:var(--ink);font-size:15px;border-left:4px solid var(--accent)}
+.privacy b{color:var(--accent)}
 .badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
 .badge{font:13px/1 system-ui,sans-serif;padding:6px 10px;border-radius:999px;background:var(--accent-soft);color:var(--accent)}
 .badge.warn{background:transparent;border:1px solid var(--warn);color:var(--warn)}
+.badge.pro{background:var(--gold-soft);color:var(--gold)}
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px;margin-top:22px}
-.card h2{font-size:18px;margin:0 0 14px;display:flex;align-items:center;gap:10px}
+.card h2{font-size:18px;margin:0 0 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.card h2 .sub{font-size:13px;font-weight:400;color:var(--muted)}
 .step{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--accent);color:var(--accent-ink);font-size:14px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px}
 label.f{display:block;font-size:14px;color:var(--muted)}
-select,input[type=text]{width:100%;margin-top:6px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font-size:15px}
+select,input[type=text],input[type=email],input[type=password],textarea{width:100%;margin-top:6px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font-size:15px}
+textarea{min-height:150px;font:15px/1.7 "Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;resize:vertical}
 .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:16px}
 button{border:0;border-radius:10px;padding:11px 18px;font-size:15px;cursor:pointer;background:var(--accent);color:var(--accent-ink);font-weight:600}
 button.ghost{background:transparent;color:var(--ink);border:1px solid var(--line);font-weight:500}
+button.small{padding:6px 12px;font-size:13px}
 button.rec{background:var(--danger);color:#fff}
-button:disabled{opacity:.45;cursor:not-allowed}
-.hint{font-size:13px;color:var(--muted);font-family:system-ui,sans-serif}
-.progress{margin-top:14px;display:grid;gap:8px}
-.bar{font:12px/1.4 ui-monospace,Menlo,monospace;color:var(--muted)}
-.bar .t{height:6px;border-radius:6px;background:var(--line);overflow:hidden;margin-top:3px}
-.bar .t i{display:block;height:100%;background:var(--accent);width:0;transition:width .2s}
+button.gold{background:var(--gold);color:#fff}
+button.link{background:none;border:0;padding:0;color:var(--accent);font-weight:500;text-decoration:underline;font-size:14px}
+button:disabled{opacity:.5;cursor:not-allowed}
+button.wait{background:var(--warn-soft);color:var(--warn);border:1px solid var(--warn);opacity:1}
+.hint{font-size:14px;color:var(--muted);font-family:system-ui,sans-serif}
+.modelbox{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:10px;background:var(--bg);margin-top:14px;font:14px/1.5 system-ui,sans-serif}
+.modelbox .dot{width:10px;height:10px;border-radius:50%;background:var(--warn);flex:none;animation:pulse 1.2s infinite}
+.modelbox.ok .dot{background:var(--accent);animation:none}
+.modelbox.err .dot{background:var(--danger);animation:none}
+.modelbox .meter{flex:1;height:6px;border-radius:6px;background:var(--line);overflow:hidden;min-width:80px}
+.modelbox .meter i{display:block;height:100%;background:var(--accent);width:0;transition:width .3s}
+.modelbox.ok .meter{display:none}
+@keyframes pulse{50%{opacity:.35}}
 .drop{border:2px dashed var(--line);border-radius:12px;padding:26px;text-align:center;cursor:pointer;transition:.2s}
 .drop.over{border-color:var(--accent);background:var(--accent-soft)}
 .drop strong{font-family:system-ui,sans-serif}
 audio{width:100%;margin-top:14px}
 .status{margin-top:12px;font-family:system-ui,sans-serif;font-size:14px}
 .status.err{color:var(--danger)}
-.live{margin-top:12px;padding:12px 14px;border-radius:10px;background:var(--bg);color:var(--muted);font-size:15px;min-height:1.7em;max-height:140px;overflow:auto;white-space:pre-wrap}
+.notice{margin-top:12px;padding:12px 14px;border-radius:10px;background:var(--gold-soft);color:var(--ink);font:14px/1.6 system-ui,sans-serif}
+.notice b{color:var(--gold)}
+.pbar{height:8px;border-radius:8px;background:var(--line);overflow:hidden;margin-top:10px}
+.pbar i{display:block;height:100%;width:0;background:var(--accent);transition:width .4s}
+.live{margin-top:12px;padding:12px 14px;border-radius:10px;background:var(--bg);color:var(--muted);font-size:15px;min-height:1.7em;max-height:160px;overflow:auto;white-space:pre-wrap}
 .segs{margin-top:14px;display:grid;gap:2px}
-.seg{display:grid;grid-template-columns:120px 1fr;gap:12px;padding:8px 10px;border-radius:8px;cursor:pointer}
+.seg{display:grid;grid-template-columns:120px 1fr;gap:12px;padding:8px 10px;border-radius:8px}
 .seg:hover{background:var(--accent-soft)}
-.seg time{font:13px/1.9 ui-monospace,Menlo,monospace;color:var(--accent)}
+.seg time{font:13px/1.9 ui-monospace,Menlo,monospace;color:var(--accent);cursor:pointer}
 .seg span[contenteditable]{outline:none}
 .seg span[contenteditable]:focus{background:var(--bg);border-radius:4px}
 .seg.on{background:var(--accent-soft)}
+.count{font:13px system-ui,sans-serif;color:var(--muted)}
+.count.over{color:var(--danger);font-weight:600}
+.hist{margin-top:10px;display:grid;gap:8px}
+.hitem{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
+.hitem .meta{flex:1;min-width:200px}
+.hitem .name{font-weight:600;font-family:system-ui,sans-serif;word-break:break-all}
+.hitem .sub{font-size:13px;color:var(--muted);font-family:system-ui,sans-serif}
+.hitem.cur{border-color:var(--accent)}
+.empty{color:var(--muted);font-size:14px;font-family:system-ui,sans-serif;padding:8px 0}
+dialog{border:0;border-radius:16px;padding:26px;max-width:400px;width:calc(100% - 32px);background:var(--card);color:var(--ink);box-shadow:0 20px 60px rgba(0,0,0,.25)}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+dialog h3{margin:0 0 14px;font-size:20px}
+.gbtn{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;color:#1f1f1f;border:1px solid #dadce0}
+.or{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:13px;margin:16px 0 4px;font-family:system-ui,sans-serif}
+.or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
+.authmsg{font:14px system-ui,sans-serif;margin-top:10px;min-height:1.4em}
+.authmsg.err{color:var(--danger)}
 footer{margin-top:40px;color:var(--muted);font-size:13px;font-family:system-ui,sans-serif;text-align:center}
 footer a{color:inherit}
 .hidden{display:none!important}
 @media (max-width:560px){.seg{grid-template-columns:1fr;gap:0}}
 </style>
+<!-- 拼音（詞庫同音字校正用）與簡繁轉換：都在瀏覽器裡執行 -->
+<script src="https://cdn.jsdelivr.net/npm/pinyin-pro@3.26.0/dist/index.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/opencc-js@1.0.5/dist/umd/full.js"></script>
 </head>
 <body>
 <div class="wrap">
+  <div class="topbar" id="topbar">
+    <span class="who" id="who"></span>
+    <span class="badge pro hidden" id="proBadge">★ 付費版</span>
+    <button class="gold small hidden" id="upBtn">升級付費版</button>
+    <button class="ghost small hidden" id="loginBtn">登入／註冊</button>
+    <button class="ghost small hidden" id="logoutBtn">登出</button>
+  </div>
+
   <header>
     <h1>語音轉文字</h1>
-    <p>Whisper 模型直接在你的瀏覽器裡執行。錄音和檔案都不會上傳，完全免費。</p>
-    <div class="badges" id="badges"><span class="badge">🔒 檔案不離開你的電腦</span></div>
+    <p>語音辨識直接在你的電腦裡執行，支援自訂詞庫、長時間錄音、繁體中文與字幕檔。</p>
+    <div class="privacy">🔒 <b>檔案不會離開你的電腦</b>，完全可以放心你的隱私與機密。錄音、音檔、轉出來的文字都只存在你自己的瀏覽器裡，我們的伺服器看不到、也不保存。</div>
+    <div class="badges" id="badges"></div>
   </header>
 
+  <!-- 1. 模型 -->
   <section class="card">
-    <h2><span class="step">1</span>選擇模型</h2>
+    <h2><span class="step">1</span>辨識模型 <span class="sub">開啟網頁就會自動準備，不用另外按</span></h2>
     <div class="grid">
       <label class="f">模型（越大越準、越慢）
         <select id="model">
           <option value="onnx-community/whisper-base">Base：快速（約 80 MB）</option>
-          <option value="onnx-community/whisper-small" selected>Small：均衡（約 250 MB）</option>
+          <option value="onnx-community/whisper-small">Small：均衡（約 250 MB）</option>
           <option value="onnx-community/whisper-large-v3-turbo">Large v3 Turbo：最準（約 1.6 GB，建議有 GPU）</option>
         </select>
       </label>
@@ -99,15 +149,35 @@ footer a{color:inherit}
         </select>
       </label>
     </div>
-    <div class="row">
-      <button id="loadBtn">載入模型</button>
-      <span class="hint" id="loadHint">第一次需要下載，之後會存在瀏覽器裡，下次直接開啟。</span>
+    <div class="modelbox" id="modelBox">
+      <span class="dot"></span>
+      <span id="modelText">檢查模型中…</span>
+      <span class="meter"><i id="modelMeter"></i></span>
+      <button class="small hidden" id="loadBtn">開始下載模型</button>
     </div>
-    <div class="progress" id="progress"></div>
   </section>
 
+  <!-- 2. 詞庫 -->
   <section class="card">
-    <h2><span class="step">2</span>錄音或上傳</h2>
+    <h2><span class="step">2</span>自訂詞庫 <span class="sub">人名、公司名、專有名詞，轉出來更準</span></h2>
+    <div class="row" style="margin-top:0">
+      <select id="vocabSel" style="flex:1;min-width:180px;margin:0"></select>
+      <button class="ghost small" id="vocabNew">＋ 新增詞庫</button>
+      <button class="ghost small" id="vocabRename">改名</button>
+      <button class="ghost small" id="vocabDel">刪除</button>
+    </div>
+    <textarea id="vocabText" placeholder="一行一個詞，例如：&#10;王曉明&#10;鼎泰豐&#10;台積電 = 太極電, 台機電&#10;ChatGPT&#10;&#10;「=」後面可以寫常被聽錯的寫法（可不寫，同音字會自動比對）"></textarea>
+    <div class="row" style="margin-top:8px">
+      <span class="count" id="vocabCount"></span>
+      <span style="flex:1"></span>
+      <button class="small" id="vocabSave">儲存詞庫</button>
+    </div>
+    <div class="notice hidden" id="vocabLimit"></div>
+  </section>
+
+  <!-- 3. 音檔 -->
+  <section class="card">
+    <h2><span class="step">3</span>錄音或上傳</h2>
     <div class="row" style="margin-top:0">
       <button id="recBtn" class="rec">● 開始錄音</button>
       <span class="hint" id="recTime"></span>
@@ -118,149 +188,308 @@ footer a{color:inherit}
       <input type="file" id="file" accept="audio/*,video/*" class="hidden">
     </div>
     <audio id="player" controls class="hidden"></audio>
+    <div class="grid" style="margin-top:14px">
+      <label class="f">這次使用的詞庫
+        <select id="useVocab"></select>
+      </label>
+    </div>
     <div class="row">
-      <button id="goBtn" disabled>開始轉文字</button>
+      <button id="goBtn" disabled>請先選擇音檔</button>
+      <button id="stopBtn" class="ghost hidden">停止</button>
       <span class="hint" id="audioInfo"></span>
     </div>
+    <div class="notice hidden" id="resumeBox"></div>
+    <div class="notice hidden" id="limitBox"></div>
     <div class="status" id="status"></div>
+    <div class="pbar hidden" id="pbar"><i></i></div>
     <div class="live hidden" id="live"></div>
   </section>
 
+  <!-- 4. 結果 -->
   <section class="card hidden" id="resultCard">
-    <h2><span class="step">3</span>結果</h2>
-    <p class="hint" style="margin:0">點時間可以跳到那一段播放；文字可以直接點進去修改，匯出時會用修改後的內容。</p>
+    <h2><span class="step">4</span>結果 <span class="sub" id="resultName"></span></h2>
+    <p class="hint" style="margin:0">點時間可以跳到那一段播放；文字可以直接點進去修改，會自動存回你的電腦。</p>
     <div class="row">
       <button id="copyBtn" class="ghost">複製全文</button>
       <button id="txtBtn" class="ghost">下載 TXT</button>
       <button id="srtBtn" class="ghost">下載 SRT 字幕</button>
       <button id="vttBtn" class="ghost">下載 VTT 字幕</button>
+      <button id="reVocabBtn" class="ghost">用詞庫重新校正</button>
     </div>
+    <div class="status" id="resultStatus"></div>
     <div class="segs" id="segs"></div>
+  </section>
+
+  <!-- 5. 紀錄 -->
+  <section class="card">
+    <h2><span class="step">5</span>我的轉錄紀錄 <span class="sub">只存在這台電腦的瀏覽器裡</span></h2>
+    <div class="notice hidden" id="histLimit"></div>
+    <div class="hist" id="hist"></div>
+    <div class="row">
+      <button class="ghost small" id="backupBtn">備份全部到檔案</button>
+      <button class="ghost small" id="restoreBtn">從備份檔還原</button>
+      <input type="file" id="restoreFile" accept=".json,application/json" class="hidden">
+      <span class="hint">換電腦或清除瀏覽器資料前，記得先備份。</span>
+    </div>
   </section>
 
   <footer>使用開源的 <a href="https://github.com/openai/whisper" target="_blank" rel="noopener">OpenAI Whisper</a>（MIT 授權）與 <a href="https://huggingface.co/docs/transformers.js" target="_blank" rel="noopener">Transformers.js</a>。<br>© <span id="cy">2026</span> wingfeeling. All rights reserved.</footer>
 </div>
 
-<!-- 背景執行緒：負責下載模型與辨識，避免畫面卡住 -->
-<script type="text/js-worker" id="workerSrc">
-import { pipeline, env, WhisperTextStreamer } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.7.1';
-env.allowLocalModels = false;
+<!-- 登入／註冊 -->
+<dialog id="authDlg">
+  <h3 id="authTitle">登入</h3>
+  <button class="gbtn" id="gBtn"><svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>使用 Google 帳號登入</button>
+  <div class="or">或用 Email</div>
+  <label class="f">Email<input type="email" id="aEmail" autocomplete="email"></label>
+  <label class="f" style="margin-top:10px">密碼<input type="password" id="aPw" autocomplete="current-password" placeholder="至少 6 個字元"></label>
+  <div class="row"><button id="aSubmit" style="flex:1">登入</button></div>
+  <div class="authmsg" id="aMsg"></div>
+  <div class="row" style="justify-content:space-between;margin-top:8px">
+    <button class="link" id="aSwitch">還沒有帳號？註冊</button>
+    <button class="link" id="aForgot">忘記密碼</button>
+  </div>
+  <div class="row" style="justify-content:flex-end"><button class="ghost small" id="aClose">關閉</button></div>
+</dialog>
 
-let asr = null, loadedKey = '';
-
-self.onmessage = async (e) => {
-  const m = e.data;
-  try {
-    if (m.type === 'load') {
-      const key = m.model + '|' + m.device;
-      if (asr && loadedKey === key) { self.postMessage({ type: 'ready', device: m.device }); return; }
-      if (asr) { try { await asr.dispose(); } catch {} asr = null; }
-      asr = await pipeline('automatic-speech-recognition', m.model, {
-        device: m.device,
-        dtype: m.dtype,
-        progress_callback: (p) => self.postMessage({ type: 'progress', p }),
-      });
-      loadedKey = key;
-      self.postMessage({ type: 'ready', device: m.device });
-    }
-    if (m.type === 'run') {
-      const opts = {
-        task: 'transcribe',
-        chunk_length_s: 30,
-        stride_length_s: 5,
-        return_timestamps: true,
-      };
-      if (m.language !== 'auto') opts.language = m.language;
-      try {
-        let done = 0;
-        opts.streamer = new WhisperTextStreamer(asr.tokenizer, {
-          skip_prompt: true,
-          callback_function: (t) => self.postMessage({ type: 'partial', text: t }),
-          on_chunk_end: () => self.postMessage({ type: 'chunk', n: ++done }),
-        });
-      } catch { /* 沒有串流也能正常轉，只是看不到即時文字 */ }
-      const out = await asr(m.audio, opts);
-      self.postMessage({ type: 'result', out });
-    }
-  } catch (err) {
-    self.postMessage({ type: 'error', message: String(err && err.message || err) });
-  }
-};
-</script>
-
-<script src="https://cdn.jsdelivr.net/npm/opencc-js@1.0.5/dist/umd/full.js"></script>
 <script type="module">
+import { LIMITS, UPGRADE_URL } from './config.js';
+import * as Auth from './auth.js';
+import * as Store from './store.js';
+import * as Vocab from './vocab.js';
+
 const $ = (id) => document.getElementById(id);
 { const y = new Date().getFullYear(); $('cy').textContent = y > 2026 ? '2026–' + y : '2026'; }
 const SR = 16000;
+const PART_SEC = (+new URLSearchParams(location.search).get('part')) || 10 * 60;   // 長檔案每 10 分鐘切一段，每段做完就先存起來
 
-// ---------- 背景執行緒 ----------
-const workerUrl = URL.createObjectURL(new Blob([$('workerSrc').textContent], { type: 'text/javascript' }));
-const worker = new Worker(workerUrl, { type: 'module' });
+// ================= 帳號與方案 =================
+let user = null, plan = 'free', owner = 'guest';
+const lim = () => LIMITS[plan] || LIMITS.free;
 
-// ---------- 偵測 GPU ----------
-let gpu = { ok: false, f16: false };
-async function detectGPU() {
-  try {
-    if (!navigator.gpu) return;
-    const a = await navigator.gpu.requestAdapter();
-    if (!a) return;
-    gpu = { ok: true, f16: a.features.has('shader-f16') };
-  } catch {}
+function renderAccount() {
+  $('who').textContent = user ? (user.email || user.displayName || '已登入') : (Auth.configured ? '訪客' : '訪客模式');
+  $('loginBtn').classList.toggle('hidden', !Auth.configured || !!user);
+  $('logoutBtn').classList.toggle('hidden', !user);
+  $('proBadge').classList.toggle('hidden', plan !== 'pro');
+  $('upBtn').classList.toggle('hidden', plan === 'pro');
 }
-await detectGPU();
-const b = document.createElement('span');
-b.className = 'badge' + (gpu.ok ? '' : ' warn');
-b.textContent = gpu.ok ? '⚡ 已啟用 GPU 加速' : '未偵測到 GPU 加速，會用 CPU（較慢）';
-$('badges').appendChild(b);
-if (gpu.ok) $('model').value = 'onnx-community/whisper-large-v3-turbo';
+async function onAccount(u, p) {
+  const prevOwner = owner;
+  user = u; plan = p; owner = u ? 'u:' + u.uid : 'guest';
+  if (u && prevOwner === 'guest') { try { await Store.adopt('guest', owner); } catch {} }
+  renderAccount();
+  await loadVocabLists();
+  await renderHistory();
+  await checkDraft();
+  updateGo();
+}
+function upgrade(reason) {
+  if (!user && Auth.configured) { openAuth(false, reason ? reason + '，請先登入再升級。' : ''); return; }
+  if (UPGRADE_URL) {
+    const u = new URL(UPGRADE_URL);
+    if (user) { u.searchParams.set('uid', user.uid); if (user.email) u.searchParams.set('email', user.email); }
+    window.open(u, '_blank', 'noopener');
+  } else alert('付費版即將推出，敬請期待！');
+}
+$('upBtn').onclick = () => upgrade();
+$('logoutBtn').onclick = async () => { await Auth.logout(); };
+
+// ---- 登入視窗 ----
+let regMode = false;
+function openAuth(reg = false, msg = '') {
+  regMode = reg; syncAuth();
+  $('aMsg').textContent = msg; $('aMsg').className = 'authmsg';
+  $('authDlg').showModal();
+}
+function syncAuth() {
+  $('authTitle').textContent = regMode ? '註冊新帳號' : '登入';
+  $('aSubmit').textContent = regMode ? '註冊' : '登入';
+  $('aSwitch').textContent = regMode ? '已經有帳號？登入' : '還沒有帳號？註冊';
+  $('aPw').autocomplete = regMode ? 'new-password' : 'current-password';
+}
+function aMsg(t, err = true) { $('aMsg').textContent = t; $('aMsg').className = 'authmsg' + (err ? ' err' : ''); }
+$('loginBtn').onclick = () => openAuth(false);
+$('aClose').onclick = () => $('authDlg').close();
+$('aSwitch').onclick = () => { regMode = !regMode; syncAuth(); aMsg('', false); };
+$('gBtn').onclick = async () => {
+  try { await Auth.google(); $('authDlg').close(); } catch (e) { aMsg(Auth.errText(e)); }
+};
+$('aSubmit').onclick = async () => {
+  const email = $('aEmail').value.trim(), pw = $('aPw').value;
+  try {
+    if (regMode) { await Auth.register(email, pw); aMsg('註冊成功！驗證信已寄到你的信箱。', false); setTimeout(() => $('authDlg').close(), 1500); }
+    else { await Auth.login(email, pw); $('authDlg').close(); }
+  } catch (e) { aMsg(Auth.errText(e)); }
+};
+$('aForgot').onclick = async () => {
+  const email = $('aEmail').value.trim();
+  if (!email) return aMsg('請先在上面填 Email');
+  try { await Auth.resetPw(email); aMsg('重設密碼的信已寄出，請到信箱查看。', false); } catch (e) { aMsg(Auth.errText(e)); }
+};
+
+// ================= 模型：開網頁就自動下載，第二次直接從本機讀 =================
+const worker = new Worker(new URL('./worker.js', import.meta.url), { type: 'module' });
+let gpu = { ok: false, f16: false };
+try {
+  if (navigator.gpu) { const a = await navigator.gpu.requestAdapter(); if (a) gpu = { ok: true, f16: a.features.has('shader-f16') }; }
+} catch {}
+{
+  const b = document.createElement('span');
+  b.className = 'badge' + (gpu.ok ? '' : ' warn');
+  b.textContent = gpu.ok ? '⚡ 已啟用 GPU 加速' : '未偵測到 GPU 加速，會用 CPU（較慢）';
+  $('badges').appendChild(b);
+}
+// 請瀏覽器不要自動清掉模型與紀錄
+try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch {}
+
+const saved = localStorage.getItem('ww-model');
+$('model').value = saved || (gpu.ok ? 'onnx-community/whisper-large-v3-turbo' : 'onnx-community/whisper-small');
+for (const k of ['lang', 'script']) { const v = localStorage.getItem('ww-' + k); if (v) $(k).value = v; }
 
 function pickConfig(model) {
   if (gpu.ok) {
     const isTurbo = model.includes('turbo');
-    return {
-      device: 'webgpu',
-      dtype: {
-        encoder_model: gpu.f16 ? 'fp16' : (isTurbo ? 'q4' : 'fp32'),
-        decoder_model_merged: 'q4',
-      },
-    };
+    return { device: 'webgpu', dtype: { encoder_model: gpu.f16 ? 'fp16' : (isTurbo ? 'q4' : 'fp32'), decoder_model_merged: 'q4' } };
   }
   return { device: 'wasm', dtype: { encoder_model: 'q8', decoder_model_merged: 'q8' } };
 }
 
-// ---------- 載入模型 ----------
-let ready = false, busy = false;
-const bars = new Map();
-function setStatus(t, err = false) { $('status').textContent = t; $('status').className = 'status' + (err ? ' err' : ''); }
-function fmtMB(n) { return (n / 1048576).toFixed(n > 1e8 ? 0 : 1) + ' MB'; }
+let modelState = 'idle';  // idle | downloading | loading | ready | error
+let modelPct = 0, modelCached = false;
+const files = new Map();
 
-$('loadBtn').onclick = () => {
-  ready = false; updateGo();
-  $('progress').innerHTML = ''; bars.clear();
-  $('loadBtn').disabled = true;
-  $('loadHint').textContent = '下載中…第一次比較久，請不要關閉頁面。';
-  const cfg = pickConfig($('model').value);
-  worker.postMessage({ type: 'load', model: $('model').value, ...cfg });
-};
-$('model').onchange = () => { ready = false; updateGo(); $('loadHint').textContent = '換了模型，請重新按「載入模型」。'; };
-
-function onProgress(p) {
-  if (p.status !== 'progress' && p.status !== 'done') return;
-  if (!/\.onnx/.test(p.file || '') && !bars.has(p.file)) return; // 只顯示大檔
-  let el = bars.get(p.file);
-  if (!el) {
-    el = document.createElement('div'); el.className = 'bar';
-    el.innerHTML = '<div class="n"></div><div class="t"><i></i></div>';
-    $('progress').appendChild(el); bars.set(p.file, el);
-  }
-  const pct = p.status === 'done' ? 100 : (p.progress || 0);
-  el.querySelector('i').style.width = pct + '%';
-  const name = p.file.split('/').pop();
-  el.querySelector('.n').textContent = `${name}　${pct.toFixed(0)}%` + (p.total ? `　/ ${fmtMB(p.total)}` : '');
+function setModel(state, text) {
+  modelState = state;
+  const box = $('modelBox');
+  box.className = 'modelbox' + (state === 'ready' ? ' ok' : state === 'error' ? ' err' : '');
+  $('modelText').textContent = text;
+  $('modelMeter').style.width = modelPct + '%';
+  $('loadBtn').classList.toggle('hidden', state !== 'idle' && state !== 'error');
+  updateGo();
 }
 
-// ---------- 錄音 ----------
+async function isCached(model) {
+  // transformers.js 把下載過的模型放在 Cache Storage「transformers-cache」
+  try {
+    if (!('caches' in window)) return false;
+    const c = await caches.open('transformers-cache');
+    const keys = await c.keys();
+    const mine = keys.map((r) => r.url).filter((u) => u.includes('/' + model + '/') && /\.onnx/.test(u));
+    return mine.some((u) => /encoder/.test(u)) && mine.some((u) => /decoder/.test(u));
+  } catch { return false; }
+}
+
+function onDataSaver() {
+  const c = navigator.connection;
+  return !!(c && (c.saveData || c.type === 'cellular'));
+}
+
+async function loadModel(force = false) {
+  const model = $('model').value;
+  files.clear(); modelPct = 0;
+  modelCached = await isCached(model);
+  if (!modelCached && !force && onDataSaver()) {
+    setModel('idle', '你目前可能在用行動網路，模型檔案較大，確認後再下載。');
+    return;
+  }
+  setModel(modelCached ? 'loading' : 'downloading',
+    modelCached ? '模型已存在你的電腦裡，啟動中…' : '第一次使用，正在下載模型（只需要下載一次）…');
+  worker.postMessage({ type: 'load', model, ...pickConfig(model) });
+}
+$('loadBtn').onclick = () => loadModel(true);
+$('model').onchange = () => { localStorage.setItem('ww-model', $('model').value); loadModel(true); };
+$('lang').onchange = () => localStorage.setItem('ww-lang', $('lang').value);
+
+function onProgress(p) {
+  if (!p.file || !/\.onnx/.test(p.file)) return;
+  if (p.status === 'progress') files.set(p.file, { loaded: p.loaded || 0, total: p.total || 0 });
+  else if (p.status === 'done') { const f = files.get(p.file); if (f) f.loaded = f.total; }
+  else return;
+  let L = 0, T = 0;
+  for (const f of files.values()) { L += f.loaded; T += f.total; }
+  if (!T) return;
+  modelPct = Math.min(100, L / T * 100);
+  if (modelCached) return setModel('loading', `模型已存在你的電腦裡，啟動中…`);
+  const done = modelPct >= 99.9;
+  setModel(done ? 'loading' : 'downloading',
+    done ? '下載完成，啟動模型中…' : `第一次使用，正在下載模型 ${modelPct.toFixed(0)}%（${fmtMB(L)} / ${fmtMB(T)}），只需要下載一次`);
+}
+
+// ================= 詞庫 =================
+let lists = [], curList = null;
+async function loadVocabLists() {
+  lists = await Store.listVocab(owner);
+  if (!lists.length) {
+    const v = { id: Store.uid(), owner, name: '我的詞庫', entries: [], created: Date.now() };
+    await Store.putVocab(v); lists = [v];
+  }
+  const keep = curList && lists.find((l) => l.id === curList.id);
+  curList = keep || lists[0];
+  renderVocab();
+}
+function renderVocab() {
+  $('vocabSel').innerHTML = '';
+  const pick = $('useVocab').value;
+  $('useVocab').innerHTML = '<option value="">不使用詞庫</option>';
+  for (const l of lists) {
+    const o = new Option(`${l.name}（${l.entries.length} 個詞）`, l.id);
+    $('vocabSel').add(o);
+    $('useVocab').add(new Option(`${l.name}（${l.entries.length} 個詞）`, l.id));
+  }
+  $('vocabSel').value = curList.id;
+  const last = localStorage.getItem('ww-use-' + owner);
+  $('useVocab').value = [...$('useVocab').options].some((o) => o.value === (pick || last)) ? (pick || last) : (lists.find((l) => l.entries.length) ? lists.find((l) => l.entries.length).id : '');
+  $('vocabText').value = Vocab.toLines(curList.entries);
+  countVocab();
+}
+function countVocab() {
+  const n = Vocab.parseLines($('vocabText').value).length;
+  const max = lim().maxTermsPerList;
+  const over = n > max;
+  $('vocabCount').textContent = isFinite(max) ? `${n} / ${max} 個詞` : `${n} 個詞`;
+  $('vocabCount').className = 'count' + (over ? ' over' : '');
+  $('vocabLimit').classList.toggle('hidden', !over);
+  if (over) $('vocabLimit').innerHTML = `免費版每個詞庫最多 ${max} 個詞，你現在有 ${n} 個。<b>升級付費版就沒有上限。</b> <button class="gold small" id="vocabUp">升級</button>`;
+  const b = document.getElementById('vocabUp'); if (b) b.onclick = () => upgrade('詞庫超過 ' + max + ' 個詞');
+  return { n, over };
+}
+$('vocabText').oninput = countVocab;
+$('vocabSel').onchange = () => { curList = lists.find((l) => l.id === $('vocabSel').value); renderVocab(); };
+$('vocabSave').onclick = async () => {
+  const { over } = countVocab();
+  if (over) return;
+  curList.entries = Vocab.parseLines($('vocabText').value);
+  await Store.putVocab(curList);
+  renderVocab();
+  $('vocabSave').textContent = '已儲存 ✓'; setTimeout(() => ($('vocabSave').textContent = '儲存詞庫'), 1500);
+};
+$('vocabNew').onclick = async () => {
+  const name = prompt('新詞庫的名稱（例如：公司會議、醫療用語）');
+  if (!name) return;
+  curList = { id: Store.uid(), owner, name: name.trim(), entries: [], created: Date.now() };
+  await Store.putVocab(curList); lists.push(curList); renderVocab();
+};
+$('vocabRename').onclick = async () => {
+  const name = prompt('詞庫名稱', curList.name);
+  if (!name) return;
+  curList.name = name.trim(); await Store.putVocab(curList); renderVocab();
+};
+$('vocabDel').onclick = async () => {
+  if (!confirm(`確定刪除詞庫「${curList.name}」？`)) return;
+  await Store.deleteVocab(curList.id); curList = null; await loadVocabLists();
+};
+$('useVocab').onchange = () => localStorage.setItem('ww-use-' + owner, $('useVocab').value);
+
+function activeRules() {
+  const l = lists.find((x) => x.id === $('useVocab').value);
+  if (!l || !l.entries.length) return { rules: null, list: null };
+  const max = lim().maxTermsPerList;
+  const entries = isFinite(max) ? l.entries.slice(0, max) : l.entries;
+  return { rules: Vocab.compile(entries), list: l };
+}
+
+// ================= 錄音 =================
 let rec = null, chunks = [], recStart = 0, recTimer = null;
 $('recBtn').onclick = async () => {
   if (rec && rec.state === 'recording') { rec.stop(); return; }
@@ -273,19 +502,19 @@ $('recBtn').onclick = async () => {
       stream.getTracks().forEach((t) => t.stop());
       clearInterval(recTimer);
       $('recBtn').textContent = '● 重新錄音';
-      const blob = new Blob(chunks, { type: rec.mimeType || 'audio/webm' });
-      setAudio(blob, '錄音');
+      const d = new Date();
+      setAudio(new Blob(chunks, { type: rec.mimeType || 'audio/webm' }), `錄音 ${d.getMonth() + 1}-${d.getDate()} ${String(d.getHours()).padStart(2, '0')}${String(d.getMinutes()).padStart(2, '0')}`);
     };
     rec.start(1000);
     recStart = Date.now();
     $('recBtn').textContent = '■ 停止錄音';
     recTimer = setInterval(() => { $('recTime').textContent = '錄音中 ' + clock((Date.now() - recStart) / 1000); }, 250);
-  } catch (err) {
+  } catch {
     setStatus('無法使用麥克風：請允許瀏覽器使用麥克風，或確認網址是 https 開頭。', true);
   }
 };
 
-// ---------- 上傳 ----------
+// ================= 上傳 =================
 const drop = $('drop');
 drop.onclick = () => $('file').click();
 $('file').onchange = (e) => e.target.files[0] && setAudio(e.target.files[0], e.target.files[0].name);
@@ -293,29 +522,71 @@ drop.ondragover = (e) => { e.preventDefault(); drop.classList.add('over'); };
 drop.ondragleave = () => drop.classList.remove('over');
 drop.ondrop = (e) => { e.preventDefault(); drop.classList.remove('over'); const f = e.dataTransfer.files[0]; f && setAudio(f, f.name); };
 
-let audioBlob = null, audioName = 'transcript';
+let audioBlob = null, audioName = 'transcript', audioKey = '', audioDur = 0;
 function setAudio(blob, name) {
   audioBlob = blob;
   audioName = (name || 'transcript').replace(/\.[^.]+$/, '');
+  audioKey = `${name}|${blob.size}|${blob.lastModified || ''}`;
+  audioDur = 0;
   const p = $('player');
   if (p.src) URL.revokeObjectURL(p.src);
   p.src = URL.createObjectURL(blob);
   p.classList.remove('hidden');
   $('recTime').textContent = '';
   $('audioInfo').textContent = `${name}（${fmtMB(blob.size)}）`;
-  p.onloadedmetadata = () => { if (isFinite(p.duration)) $('audioInfo').textContent = `${name}（${clock(p.duration)}）`; };
-  setStatus(ready ? '準備好了，按「開始轉文字」。' : '請先在上面載入模型。');
+  $('limitBox').classList.add('hidden');
+  p.onloadedmetadata = () => {
+    if (isFinite(p.duration)) { audioDur = p.duration; $('audioInfo').textContent = `${name}（${clock(p.duration)}）`; checkLength(); }
+  };
+  setStatus('');
+  checkDraft();
   updateGo();
 }
-function updateGo() { $('goBtn').disabled = !(ready && audioBlob && !busy); }
+function checkLength() {
+  const max = lim().maxMinutes * 60;
+  const over = audioDur > max;
+  $('limitBox').classList.toggle('hidden', !over);
+  if (over) {
+    $('limitBox').innerHTML = `這個檔案長 ${clock(audioDur)}，免費版每次最多轉 ${lim().maxMinutes} 分鐘。<b>升級付費版可以轉超過 1 小時的長檔案。</b><div class="row" style="margin-top:8px"><button class="gold small" id="lenUp">升級付費版</button><button class="ghost small" id="lenCut">先轉前 ${lim().maxMinutes} 分鐘</button></div>`;
+    $('lenUp').onclick = () => upgrade('檔案超過 1 小時');
+    $('lenCut').onclick = () => start({ cut: true });
+  }
+  return over;
+}
+
+// ---- 開始按鈕：模型還沒好就顯示「模型下載中，請稍候」，好了自動開始 ----
+let busy = false, queued = null;
+function updateGo() {
+  const b = $('goBtn');
+  b.classList.remove('wait');
+  if (busy) { b.disabled = true; b.textContent = '轉文字中…'; return; }
+  if (!audioBlob) { b.disabled = true; b.textContent = '請先選擇音檔'; return; }
+  if (modelState !== 'ready') {
+    b.disabled = false; b.classList.add('wait');
+    if (modelState === 'error' || modelState === 'idle') b.textContent = '模型還沒準備好，請先下載模型';
+    else if (queued) b.textContent = '模型準備好就會自動開始…';
+    else b.textContent = modelState === 'downloading' ? `還在下載模型，請稍候…（${modelPct.toFixed(0)}%）` : '模型啟動中，請稍候…';
+    return;
+  }
+  b.disabled = false; b.textContent = '開始轉文字';
+}
+$('goBtn').onclick = () => {
+  if (modelState !== 'ready') {
+    if (modelState === 'idle' || modelState === 'error') { loadModel(true); return; }
+    queued = { cut: false, resume: null }; updateGo();
+    setStatus('已排隊：模型準備好就會自動開始，請不要關閉網頁。');
+    return;
+  }
+  start({});
+};
+$('stopBtn').onclick = () => { stopFlag = true; $('stopBtn').disabled = true; setStatus('會在這一段做完後停止，已完成的部分會保留，下次可以接著轉。'); };
 
 async function decode(blob) {
   const buf = await blob.arrayBuffer();
   const ctx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: SR });
-  const ab = await ctx.decodeAudioData(buf);
-  ctx.close();
+  let ab;
+  try { ab = await ctx.decodeAudioData(buf); } finally { ctx.close(); }
   if (ab.numberOfChannels === 1) return ab.getChannelData(0);
-  // 混成單聲道
   const out = new Float32Array(ab.length);
   for (let c = 0; c < ab.numberOfChannels; c++) {
     const d = ab.getChannelData(c);
@@ -324,93 +595,305 @@ async function decode(blob) {
   return out;
 }
 
-// ---------- 轉文字 ----------
-let t0 = 0, tick = null, totalChunks = 0, liveText = '';
-$('goBtn').onclick = async () => {
-  busy = true; updateGo();
-  setStatus('讀取音檔中…');
+// 找切點：在每 10 分鐘附近往前 20 秒內，找最安靜的地方切，避免把一句話切斷
+function planParts(audio) {
+  const total = audio.length, step = PART_SEC * SR, look = 20 * SR, win = Math.round(0.3 * SR);
+  const cuts = [0];
+  let pos = step;
+  while (pos < total - 30 * SR) {
+    let best = pos, bestE = Infinity;
+    for (let s = Math.max(cuts[cuts.length - 1] + SR * 60, pos - look); s + win <= pos; s += Math.round(win / 3)) {
+      let e = 0;
+      for (let i = s; i < s + win; i += 4) e += audio[i] * audio[i];
+      if (e < bestE) { bestE = e; best = s + (win >> 1); }
+    }
+    cuts.push(best); pos = best + step;
+  }
+  cuts.push(total);
+  const parts = [];
+  for (let i = 0; i + 1 < cuts.length; i++) parts.push([cuts[i], cuts[i + 1]]);
+  return parts;
+}
+
+// ---- 防止電腦睡眠、誤關網頁 ----
+let wake = null;
+async function keepAwake(on) {
+  try {
+    if (on && 'wakeLock' in navigator) wake = await navigator.wakeLock.request('screen');
+    else if (!on && wake) { await wake.release(); wake = null; }
+  } catch {}
+}
+document.addEventListener('visibilitychange', () => { if (busy && document.visibilityState === 'visible') keepAwake(true); });
+window.addEventListener('beforeunload', (e) => { if (busy) { e.preventDefault(); e.returnValue = ''; } });
+
+// ---- 接續上次沒做完的長檔案 ----
+let draft = null;
+async function checkDraft() {
+  draft = null;
+  try { draft = await Store.getDraft(owner); } catch {}
+  const box = $('resumeBox');
+  if (!draft) { box.classList.add('hidden'); return; }
+  const pct = Math.round(draft.doneUntil / draft.duration * 100);
+  const same = audioKey && draft.key === audioKey;
+  box.classList.remove('hidden');
+  box.innerHTML = same
+    ? `這個檔案上次轉到 ${clock(draft.doneUntil)}（${pct}%）就中斷了。<div class="row" style="margin-top:8px"><button class="small" id="dResume">從 ${clock(draft.doneUntil)} 接著轉</button><button class="ghost small" id="dDrop">重新開始</button></div>`
+    : `上次「${draft.name}」轉到 ${pct}% 中斷了。選同一個檔案就可以接著轉。<div class="row" style="margin-top:8px"><button class="ghost small" id="dSave">先把已完成的部分存起來</button><button class="ghost small" id="dDrop">放棄</button></div>`;
+  const r = document.getElementById('dResume'); if (r) r.onclick = () => start({ resume: draft });
+  const s = document.getElementById('dSave'); if (s) s.onclick = async () => { await finish(draft.segs, draft, true); await Store.clearDraft(owner); checkDraft(); };
+  $('dDrop').onclick = async () => { await Store.clearDraft(owner); checkDraft(); };
+}
+
+// ================= 轉文字 =================
+let stopFlag = false, liveText = '', partResolve = null;
+function runPart(audio, part) {
+  return new Promise((res, rej) => {
+    partResolve = { res, rej };
+    worker.postMessage({ type: 'run', audio, language: $('lang').value, part }, [audio.buffer]);
+  });
+}
+
+async function start({ cut = false, resume = null }) {
+  if (busy) return;
+  if (modelState !== 'ready') { queued = { cut, resume }; updateGo(); setStatus('模型準備好就會自動開始，請不要關閉網頁。'); if (modelState === 'idle' || modelState === 'error') loadModel(true); return; }
+  queued = null;
+  if (!cut && audioDur && checkLength()) return;
+  busy = true; stopFlag = false; updateGo();
+  $('stopBtn').classList.remove('hidden'); $('stopBtn').disabled = false;
+  $('resumeBox').classList.add('hidden');
+  setStatus('讀取音檔中…（長檔案需要一點時間）');
   let audio;
   try { audio = await decode(audioBlob); }
-  catch { busy = false; updateGo(); setStatus('這個檔案讀不出聲音，請換成 mp3、m4a 或 wav 再試一次。', true); return; }
-  const dur = audio.length / SR;
-  totalChunks = Math.max(1, Math.ceil(dur / 25));
-  liveText = '';
-  $('live').textContent = ''; $('live').classList.remove('hidden');
-  t0 = Date.now();
-  const show = (n = 0) => setStatus(`辨識中…（音檔長 ${clock(dur)}，已花 ${clock((Date.now() - t0) / 1000)}${totalChunks > 1 ? `，約 ${Math.min(99, Math.round(n / totalChunks * 100))}%` : ''}）`);
-  let doneChunks = 0; show();
-  tick = setInterval(() => show(doneChunks), 1000);
-  worker._chunk = (n) => { doneChunks = n; show(n); };
-  worker.postMessage({ type: 'run', audio, language: $('lang').value }, [audio.buffer]);
-};
+  catch (e) {
+    busy = false; $('stopBtn').classList.add('hidden'); updateGo();
+    const big = audioBlob.size > 300 * 1048576;
+    setStatus(big ? '檔案太大，瀏覽器記憶體不夠讀取。建議先把影片轉成 mp3／m4a 音檔（檔案會小很多）再試。'
+                  : '這個檔案讀不出聲音，請換成 mp3、m4a 或 wav 再試一次。', true);
+    return;
+  }
+  let dur = audio.length / SR;
+  audioDur = dur;
+  const maxSec = lim().maxMinutes * 60;
+  if (dur > maxSec) {
+    if (!cut) { busy = false; $('stopBtn').classList.add('hidden'); updateGo(); checkLength(); setStatus(''); return; }
+    audio = audio.subarray(0, Math.floor(maxSec * SR)); dur = maxSec;
+  }
+  const parts = planParts(audio);
+  const segs = resume ? resume.segs.slice() : [];
+  const startAt = resume ? Math.round(resume.doneUntil * SR) : 0;
+  const settings = { model: $('model').value, lang: $('lang').value, vocabId: $('useVocab').value };
+  const t0 = Date.now();
+  let doneSec = startAt / SR;
+  $('pbar').classList.remove('hidden');
+  $('live').textContent = ''; $('live').classList.remove('hidden'); liveText = '';
+  await keepAwake(true);
 
-// ---------- 繁體轉換 ----------
-let conv = (s) => s;
+  const show = () => {
+    const pct = Math.min(99, doneSec / dur * 100);
+    const spent = (Date.now() - t0) / 1000;
+    const worked = doneSec - startAt / SR;
+    const eta = worked > 30 ? (dur - doneSec) * spent / worked : null;
+    $('pbar').firstElementChild.style.width = pct + '%';
+    setStatus(`辨識中… ${pct.toFixed(0)}%（音檔長 ${clock(dur)}，已花 ${clock(spent)}${eta ? `，預估還要 ${clock(eta)}` : ''}）。請不要關閉網頁，電腦也不要進入睡眠。`);
+  };
+  const tick = setInterval(show, 1000);
+  show();
+
+  try {
+    for (let i = 0; i < parts.length; i++) {
+      const [a, b] = parts[i];
+      if (b <= startAt) continue;
+      const from = Math.max(a, startAt);
+      const off = from / SR;
+      const slice = audio.slice(from, b);   // 複製一份給背景執行緒
+      partProgress = (n) => { doneSec = Math.min(b / SR, off + n * 25); };
+      const out = await runPart(slice, i);
+      const list = out.chunks || [{ timestamp: [0, (b - from) / SR], text: out.text }];
+      let last = 0;
+      for (const c of list) {
+        const s0 = c.timestamp[0] ?? last;
+        const e0 = c.timestamp[1] ?? Math.min(s0 + 3, (b - from) / SR);
+        last = e0;
+        const text = (c.text || '').trim();
+        if (text) segs.push({ start: off + s0, end: off + e0, text });
+      }
+      doneSec = b / SR;
+      liveText += '\n';
+      // 每段做完就存一次，萬一當掉或關掉，下次可以接著做
+      await Store.putDraft({ owner, key: audioKey, name: audioName, duration: dur, doneUntil: b / SR, segs, settings, created: resume ? resume.created : t0 });
+      if (stopFlag && i < parts.length - 1) break;
+    }
+  } catch (e) {
+    clearInterval(tick); busy = false; keepAwake(false); updateGo();
+    $('stopBtn').classList.add('hidden'); $('live').classList.add('hidden'); $('pbar').classList.add('hidden');
+    setStatus('出錯了：' + e.message + '。已完成的部分已經存起來，可以重新整理網頁後接著轉；也可以換小一點的模型試試。', true);
+    checkDraft();
+    return;
+  }
+  clearInterval(tick); busy = false; keepAwake(false);
+  $('stopBtn').classList.add('hidden'); $('live').classList.add('hidden'); $('pbar').classList.add('hidden');
+  const complete = segs.length === 0 || doneSec >= dur - 0.5;
+  if (!complete) { updateGo(); setStatus(`已停止，轉到 ${clock(doneSec)}。進度已存起來，之後可以接著轉。`); checkDraft(); return; }
+  await finish(segs, { name: audioName, duration: dur, settings, created: t0 }, false, Date.now() - t0, cut);
+  await Store.clearDraft(owner);
+  updateGo();
+}
+
+// 轉繁體＋套用詞庫，存成一筆紀錄
+async function finish(rawSegs, info, partial = false, ms = 0, cut = false) {
+  const conv = makeConv();
+  const { rules, list } = activeRules();
+  let hits = 0;
+  const segs = rawSegs.map((s) => {
+    let t = conv(s.text);
+    if (rules) { const r = Vocab.correct(t, rules); hits += r.hits.length; t = r.text; }
+    return { ...s, text: t };
+  });
+  const rec = {
+    id: Store.uid(), owner, name: info.name + (partial ? '（未完成）' : '') + (cut ? `（前 ${lim().maxMinutes} 分鐘）` : ''),
+    created: Date.now(), duration: info.duration, segs,
+    model: (info.settings || {}).model, vocab: list ? list.name : '',
+  };
+  await Store.putTranscript(rec);
+  const removed = await Store.enforceLimit(owner, lim().keepTranscripts);
+  showResult(rec, true);
+  const parts = [`✅ 完成，共 ${segs.length} 段`];
+  if (ms) parts.push(`花了 ${clock(ms / 1000)}`);
+  if (list) parts.push(`詞庫「${list.name}」校正了 ${hits} 處`);
+  setStatus(parts.join('，') + '。已存到你的電腦。');
+  if (removed) setStatus($('status').textContent + `（免費版只保留最近 ${lim().keepTranscripts} 筆，已自動刪除較舊的 ${removed} 筆）`);
+  await renderHistory();
+}
+
+// ================= 繁體轉換 =================
 function makeConv() {
   const mode = $('script').value;
   if (mode === 'none' || !window.OpenCC) return (s) => s;
   return OpenCC.Converter({ from: 'cn', to: mode });
 }
-conv = makeConv();
-$('script').onchange = () => { conv = makeConv(); if (rawSegs.length) render(rawSegs); };
+$('script').onchange = () => localStorage.setItem('ww-script', $('script').value);
 
-// ---------- 結果 ----------
-let rawSegs = [];
-function render(list) {
+// ================= 結果 =================
+let current = null, saveTimer = null;
+function showResult(rec, fromAudio) {
+  current = rec;
+  $('resultName').textContent = rec.name;
+  $('resultStatus').textContent = fromAudio ? '' : '這是之前轉的紀錄（從你的電腦讀出來）。' + (audioBlob ? '' : '要點時間播放，請先在上面選回同一個音檔。');
   const segs = $('segs'); segs.innerHTML = '';
-  list.forEach((s) => {
+  rec.segs.forEach((s) => {
     const row = document.createElement('div'); row.className = 'seg';
     row.dataset.s = s.start; row.dataset.e = s.end;
     const tm = document.createElement('time'); tm.textContent = clock(s.start) + ' → ' + clock(s.end);
-    const tx = document.createElement('span'); tx.contentEditable = 'true'; tx.textContent = conv(s.text);
-    tm.onclick = () => { const p = $('player'); p.currentTime = s.start; p.play(); };
+    const tx = document.createElement('span'); tx.contentEditable = 'true'; tx.textContent = s.text;
+    tm.onclick = () => { const p = $('player'); if (!p.src) return; p.currentTime = s.start; p.play(); };
+    tx.oninput = () => { clearTimeout(saveTimer); saveTimer = setTimeout(saveEdits, 800); };
     row.append(tm, tx); segs.appendChild(row);
   });
   $('resultCard').classList.remove('hidden');
+  document.querySelectorAll('.hitem').forEach((h) => h.classList.toggle('cur', h.dataset.id === rec.id));
+  if (fromAudio) $('resultCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 function currentSegs() {
   return [...document.querySelectorAll('.seg')].map((r) => ({
     start: +r.dataset.s, end: +r.dataset.e, text: r.querySelector('span').textContent.trim(),
   })).filter((s) => s.text);
 }
+async function saveEdits() {
+  if (!current) return;
+  current.segs = currentSegs(); current.edited = Date.now();
+  await Store.putTranscript(current);
+  $('resultStatus').textContent = '修改已存到你的電腦 ✓';
+}
+$('reVocabBtn').onclick = async () => {
+  const { rules, list } = activeRules();
+  if (!rules) { $('resultStatus').textContent = '請先在上面「這次使用的詞庫」選一個有內容的詞庫。'; return; }
+  let hits = 0;
+  document.querySelectorAll('.seg span').forEach((sp) => { const r = Vocab.correct(sp.textContent, rules); hits += r.hits.length; sp.textContent = r.text; });
+  await saveEdits();
+  $('resultStatus').textContent = `用詞庫「${list.name}」校正了 ${hits} 處，已存檔。`;
+};
 $('player').ontimeupdate = () => {
   const t = $('player').currentTime;
   document.querySelectorAll('.seg').forEach((r) => r.classList.toggle('on', t >= +r.dataset.s && t < +r.dataset.e));
 };
 
+// ================= 紀錄列表 =================
+async function renderHistory() {
+  const all = await Store.listTranscripts(owner);
+  const box = $('hist'); box.innerHTML = '';
+  if (!all.length) box.innerHTML = '<div class="empty">還沒有紀錄。轉好的文字會自動存在這台電腦裡。</div>';
+  for (const t of all) {
+    const el = document.createElement('div'); el.className = 'hitem' + (current && current.id === t.id ? ' cur' : ''); el.dataset.id = t.id;
+    const d = new Date(t.created);
+    el.innerHTML = `<div class="meta"><div class="name"></div><div class="sub">${d.toLocaleString('zh-TW', { hour12: false })}　${clock(t.duration)}　${t.segs.length} 段${t.vocab ? '　詞庫：' + esc(t.vocab) : ''}</div></div>`;
+    el.querySelector('.name').textContent = t.name;
+    const mk = (label, fn, cls = 'ghost small') => { const b = document.createElement('button'); b.className = cls; b.textContent = label; b.onclick = fn; el.appendChild(b); };
+    mk('開啟', () => { showResult(t, false); $('resultCard').scrollIntoView({ behavior: 'smooth' }); }, 'small');
+    mk('TXT', () => save(toTxt(t.segs), t.name, 'txt', 'text/plain'));
+    mk('SRT', () => save(toSrt(t.segs), t.name, 'srt', 'application/x-subrip'));
+    mk('刪除', async () => {
+      if (!confirm(`刪除「${t.name}」？刪除後無法復原。`)) return;
+      await Store.deleteTranscript(t.id);
+      if (current && current.id === t.id) { current = null; $('resultCard').classList.add('hidden'); }
+      renderHistory();
+    });
+    box.appendChild(el);
+  }
+  const keep = lim().keepTranscripts;
+  $('histLimit').classList.toggle('hidden', !isFinite(keep));
+  if (isFinite(keep)) {
+    $('histLimit').innerHTML = `免費版只保留最近 <b>${keep}</b> 筆（目前 ${all.length} 筆），再轉新的會自動刪除最舊的。<b>升級付費版就會永久保留。</b> <button class="gold small" id="histUp">升級</button>`;
+    $('histUp').onclick = () => upgrade('想保留更多紀錄');
+  }
+}
+
+$('backupBtn').onclick = async () => {
+  const data = await Store.exportAll(owner);
+  const d = new Date();
+  save(JSON.stringify(data, null, 1), `語音轉文字備份-${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`, 'json', 'application/json');
+};
+$('restoreBtn').onclick = () => $('restoreFile').click();
+$('restoreFile').onchange = async (e) => {
+  const f = e.target.files[0]; if (!f) return;
+  try {
+    const data = JSON.parse(await f.text());
+    if (data.app !== 'whisper-web') throw new Error('不是這個網站的備份檔');
+    const n = await Store.importAll(owner, data);
+    const removed = await Store.enforceLimit(owner, lim().keepTranscripts);
+    await loadVocabLists(); await renderHistory();
+    alert(`已還原 ${n} 筆紀錄。` + (removed ? `\n免費版只保留最近 ${lim().keepTranscripts} 筆，其餘 ${removed} 筆沒有保留。` : ''));
+  } catch (err) { alert('還原失敗：' + err.message); }
+  e.target.value = '';
+};
+
+// ================= 背景執行緒訊息 =================
+let partProgress = null;
 worker.onmessage = (e) => {
   const m = e.data;
   if (m.type === 'progress') onProgress(m.p);
   else if (m.type === 'ready') {
-    ready = true; $('loadBtn').disabled = false;
-    $('loadHint').textContent = `✅ 模型已就緒（${m.device === 'webgpu' ? 'GPU 加速' : 'CPU'}）`;
-    if (audioBlob) setStatus('準備好了，按「開始轉文字」。');
-    updateGo();
+    modelPct = 100;
+    setModel('ready', `✅ 模型已就緒（${m.device === 'webgpu' ? 'GPU 加速' : 'CPU'}）${modelCached ? '，已存在你的電腦，下次不用再下載' : '，已存到你的電腦，下次開啟就不用再下載'}`);
+    if (queued && audioBlob) start(queued);
   }
-  else if (m.type === 'partial') { liveText += m.text; $('live').textContent = conv(liveText); $('live').scrollTop = 1e9; }
-  else if (m.type === 'chunk') { worker._chunk && worker._chunk(m.n); liveText += '\n'; }
-  else if (m.type === 'result') {
-    clearInterval(tick); busy = false; updateGo();
-    $('live').classList.add('hidden');
-    const chunksOut = m.out.chunks || [{ timestamp: [0, null], text: m.out.text }];
-    let last = 0;
-    rawSegs = chunksOut.map((c) => {
-      const start = c.timestamp[0] ?? last;
-      const end = c.timestamp[1] ?? start + 3;
-      last = end;
-      return { start, end, text: (c.text || '').trim() };
-    }).filter((s) => s.text);
-    render(rawSegs);
-    setStatus(`✅ 完成，共 ${rawSegs.length} 段，花了 ${clock((Date.now() - t0) / 1000)}。`);
-  }
+  else if (m.type === 'partial') { liveText += m.text; $('live').textContent = makeConvCached()(liveText.slice(-2000)); $('live').scrollTop = 1e9; }
+  else if (m.type === 'chunk') { partProgress && partProgress(m.n); }
+  else if (m.type === 'result') { partResolve && partResolve.res(m.out); partResolve = null; }
   else if (m.type === 'error') {
-    clearInterval(tick); busy = false; $('loadBtn').disabled = false; updateGo();
-    $('loadHint').textContent = '';
-    setStatus('出錯了：' + m.message + '。可以試試換小一點的模型，或重新整理頁面。', true);
+    if (m.phase === 'load') {
+      queued = null;
+      setModel('error', '模型載入失敗：' + m.message + '。可以換小一點的模型，或按右邊重試。');
+      $('loadBtn').textContent = '重試';
+    } else if (partResolve) { partResolve.rej(new Error(m.message)); partResolve = null; }
   }
 };
+let _cc = null, _ccMode = '';
+function makeConvCached() { if (_ccMode !== $('script').value) { _cc = makeConv(); _ccMode = $('script').value; } return _cc; }
 
-// ---------- 匯出 ----------
+// ================= 匯出工具 =================
+function esc(s) { return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+function setStatus(t, err = false) { $('status').textContent = t; $('status').className = 'status' + (err ? ' err' : ''); }
+function fmtMB(n) { return n > 1e9 ? (n / 1073741824).toFixed(2) + ' GB' : (n / 1048576).toFixed(n > 1e8 ? 0 : 1) + ' MB'; }
 function clock(sec, ms = false, sep = '.') {
   sec = Math.max(0, sec || 0);
   const h = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60), s = Math.floor(sec % 60);
@@ -418,21 +901,29 @@ function clock(sec, ms = false, sep = '.') {
   const base = (h ? p(h) + ':' : '') + p(m) + ':' + p(s);
   return ms ? p(h) + ':' + p(m) + ':' + p(s) + sep + p(Math.round(sec % 1 * 1000) % 1000, 3) : base;
 }
-function save(text, ext, type) {
+const toTxt = (segs) => segs.map((s) => s.text).join('\n');
+const toSrt = (segs) => segs.map((s, i) => `${i + 1}\n${clock(s.start, true, ',')} --> ${clock(s.end, true, ',')}\n${s.text}\n`).join('\n');
+const toVtt = (segs) => 'WEBVTT\n\n' + segs.map((s) => `${clock(s.start, true)} --> ${clock(s.end, true)}\n${s.text}\n`).join('\n');
+function save(text, name, ext, type) {
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([text], { type: type + ';charset=utf-8' }));
-  a.download = audioName + '.' + ext; a.click();
+  a.download = (name || 'transcript').replace(/[\\/:*?"<>|]/g, '_') + '.' + ext; a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 2000);
 }
+const curName = () => (current ? current.name : audioName);
 $('copyBtn').onclick = async () => {
-  await navigator.clipboard.writeText(currentSegs().map((s) => s.text).join('\n'));
+  await navigator.clipboard.writeText(toTxt(currentSegs()));
   $('copyBtn').textContent = '已複製 ✓'; setTimeout(() => ($('copyBtn').textContent = '複製全文'), 1500);
 };
-$('txtBtn').onclick = () => save(currentSegs().map((s) => s.text).join('\n'), 'txt', 'text/plain');
-$('srtBtn').onclick = () => save(currentSegs().map((s, i) =>
-  `${i + 1}\n${clock(s.start, true, ',')} --> ${clock(s.end, true, ',')}\n${s.text}\n`).join('\n'), 'srt', 'application/x-subrip');
-$('vttBtn').onclick = () => save('WEBVTT\n\n' + currentSegs().map((s) =>
-  `${clock(s.start, true)} --> ${clock(s.end, true)}\n${s.text}\n`).join('\n'), 'vtt', 'text/vtt');
+$('txtBtn').onclick = () => save(toTxt(currentSegs()), curName(), 'txt', 'text/plain');
+$('srtBtn').onclick = () => save(toSrt(currentSegs()), curName(), 'srt', 'application/x-subrip');
+$('vttBtn').onclick = () => save(toVtt(currentSegs()), curName(), 'vtt', 'text/vtt');
+
+// ================= 啟動 =================
+renderAccount();
+loadModel();                       // 一進網頁就開始準備模型
+await onAccount(null, 'free');     // 先用訪客身分顯示本機資料
+Auth.init((u, p) => onAccount(u, p)).catch(() => {});
 </script>
 </body>
 </html>
